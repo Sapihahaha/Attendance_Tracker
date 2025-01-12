@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #141414;
+            color: white;
+        }
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #e50914;
+            text-shadow: 3px 3px 5px rgba(0, 0, 0, 0.7);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .subject {
+            background-color: #222;
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .subject h3 {
+            margin: 0;
+            color: #e50914;
+        }
+        .attendance {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+        .attendance span {
+            font-size: 1.2em;
+        }
+        .tick, .cross {
+            padding: 10px 20px;
+            margin: 0 5px;
+            background-color: #e50914;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .cross {
+            background-color: #333;
+        }
+        .tick:disabled, .cross:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+        .percentage {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .green {
+            color: green;
+        }
+        .yellow {
+            color: orange;
+        }
+        .red {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Attendance Tracker</h1>
+    <div class="container">
+        <div id="subjects"></div>
+    </div>
+    <script>
+        const timetable = {
+            Monday: ["Maths (Lecture)", "Engg Chemistry (Lecture)", "PS (Lecture)", "CP (Lab)"],
+            Tuesday: ["PS (Lecture)", "Engg Maths-II (Lecture)", "ES-II (B)", "Engg Chemistry (Lecture)", "ELX (Lecture)"],
+            Wednesday: ["PS (Lab)", "Engg Chemistry (Lecture)", "CP (Lecture)", "Maths (Lecture)", "ELX EE (Lecture)"],
+            Thursday: ["ELX (Lab)", "ELX (Lecture)", "Chemistry Lab (CHL)", "PS (Lecture)"],
+            Friday: ["Maths (Lecture)", "EG (Lecture)", "EG (Lab)", "PS (Lecture)", "CP (Lab)"]
+        };
+
+        const totalClasses = {
+            "Maths (Lecture)": 7,
+            "Engg Chemistry (Lecture)": 19,
+            "PS (Lecture)": 21,
+            "CP (Lab)": 7,
+            "Engg Maths-II (Lecture)": 19,
+            "ES-II (B)": 7,
+            "ELX (Lecture)": 14,
+            "PS (Lab)": 5,
+            "CP (Lecture)": 12,
+            "ELX EE (Lecture)": 5,
+            "ELX (Lab)": 7,
+            "Chemistry Lab (CHL)": 7,
+            "EG (Lecture)": 7,
+            "EG (Lab)": 7
+        };
+
+        const subjects = {};
+
+        Object.keys(totalClasses).forEach(subject => {
+            subjects[subject] = { 
+                absents: 0, 
+                total: totalClasses[subject],
+                availableAbsents: Math.floor(totalClasses[subject] * 0.25)
+            };
+        });
+
+        function updateAttendance(subject, type) {
+            const subjectData = subjects[subject];
+
+            if (type === 'add') {
+                if (subjectData.absents < subjectData.total) {
+                    subjectData.absents++;
+                    subjectData.availableAbsents--;
+                }
+            } else if (type === 'subtract') {
+                if (subjectData.absents > 0) {
+                    subjectData.absents--;
+                    subjectData.availableAbsents++;
+                }
+            }
+
+            renderSubjects();
+        }
+
+        function renderSubjects() {
+            const container = document.getElementById('subjects');
+            container.innerHTML = '';
+
+            Object.keys(subjects).forEach(subject => {
+                const { absents, total, availableAbsents } = subjects[subject];
+                const percentage = 100 - (absents * (100 / total));
+
+                let percentageClass = '';
+                if (percentage >= 85) percentageClass = 'green';
+                else if (percentage >= 75) percentageClass = 'yellow';
+                else percentageClass = 'red';
+
+                const subjectDiv = document.createElement('div');
+                subjectDiv.className = 'subject';
+
+                subjectDiv.innerHTML = `
+                    <h3>${subject} → Total Absents Allowed: ${availableAbsents} days (out of ${total}), Absents: ${absents}</h3>
+                    <div class="attendance">
+                        <span>${total - absents} / ${total}</span>
+                        <div>
+                            <button class="tick" onclick="updateAttendance('${subject}', 'add')">✔</button>
+                            <button class="cross" onclick="updateAttendance('${subject}', 'subtract')">✖</button>
+                        </div>
+                    </div>
+                    <div class="percentage ${percentageClass}">${percentage.toFixed(2)}%</div>
+                `;
+
+                container.appendChild(subjectDiv);
+            });
+        }
+
+        renderSubjects();
+    </script>
+</body>
+</html>
