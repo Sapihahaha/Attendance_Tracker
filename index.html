@@ -106,15 +106,29 @@
             "EG (Lab)": 7
         };
 
-        const subjects = {};
+        const localStorageKey = "attendanceData";
 
-        Object.keys(totalClasses).forEach(subject => {
-            subjects[subject] = { 
-                absents: 0, 
-                total: totalClasses[subject],
-                availableAbsents: Math.floor(totalClasses[subject] * 0.25)
-            };
-        });
+        function getSavedAttendance() {
+            const savedData = localStorage.getItem(localStorageKey);
+            if (savedData) {
+                return JSON.parse(savedData);
+            }
+            const defaultData = {};
+            Object.keys(totalClasses).forEach(subject => {
+                defaultData[subject] = { 
+                    absents: 0, 
+                    total: totalClasses[subject],
+                    availableAbsents: Math.floor(totalClasses[subject] * 0.25)
+                };
+            });
+            return defaultData;
+        }
+
+        const subjects = getSavedAttendance();
+
+        function saveAttendance() {
+            localStorage.setItem(localStorageKey, JSON.stringify(subjects));
+        }
 
         function updateAttendance(subject, type) {
             const subjectData = subjects[subject];
@@ -131,6 +145,7 @@
                 }
             }
 
+            saveAttendance();
             renderSubjects();
         }
 
